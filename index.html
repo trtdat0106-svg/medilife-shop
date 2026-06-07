@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediLife - Thực Phẩm Dinh Dưỡng & Thiết Bị Y Tế</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <a href="#" class="text-2xl font-bold text-emerald-600 flex items-center gap-2">
+                <i class="fa-solid fa-heart-pulse"></i> MediLife
+            </a>
+            
+            <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <div class="relative">
+                    <input type="text" id="search-input" oninput="searchProducts()" placeholder="Tìm sản phẩm..." class="border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-emerald-500 w-full sm:w-48">
+                    <i class="fa-solid fa-magnifying-glass absolute right-3 top-3 text-gray-400 text-xs"></i>
+                </div>
+                <div class="flex gap-1 overflow-x-auto">
+                    <button onclick="filterCategory('all')" class="nav-btn bg-emerald-600 text-white px-3 py-2 rounded-full text-xs font-medium transition cursor-pointer whitespace-nowrap">Tất cả</button>
+                    <button onclick="filterCategory('nutrition')" class="nav-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-full text-xs font-medium transition cursor-pointer whitespace-nowrap">Dinh dưỡng</button>
+                    <button onclick="filterCategory('medical')" class="nav-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-full text-xs font-medium transition cursor-pointer whitespace-nowrap">Thiết bị y tế</button>
+                </div>
+            </div>
+
+            <div class="relative cursor-pointer mr-2" onclick="toggleCartModal()">
+                <i class="fa-solid fa-cart-shopping text-2xl text-gray-600 hover:text-emerald-600 transition"></i>
+                <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-12 text-center px-4">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">Chăm Sóc Sức Khỏe Gia Đình Toàn Diện</h1>
+        <p class="text-emerald-100 max-w-xl mx-auto text-sm md:text-base">Phân phối sâm, yến, thực phẩm bổ não và thiết bị y tế gia đình đạt chuẩn.</p>
+    </section>
+
+    <main class="container mx-auto px-4 py-10">
+        <h2 class="text-2xl font-bold text-gray-800 mb-8 flex items-center gap-2">
+            <span class="w-2 h-6 bg-emerald-500 rounded-full"></span> Danh Sách Sản Phẩm
+        </h2>
+        
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
+            </div>
+
+        <div class="flex justify-center items-center gap-2 mt-10" id="pagination">
+            </div>
+    </main>
+
+    <div id="cart-modal" class="fixed inset-0 bg-black/50 z-50 flex justify-end hidden">
+        <div class="bg-white w-full max-w-md h-full flex flex-col p-6 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <h3 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-basket-shopping text-emerald-600 mr-2"></i>Giỏ hàng của bạn</h3>
+                <button onclick="toggleCartModal()" class="text-gray-400 hover:text-gray-600 text-2xl cursor-pointer">&times;</button>
+            </div>
+            
+            <div id="cart-items" class="flex-1 overflow-y-auto space-y-4 pr-2">
+                </div>
+
+            <div class="border-t pt-4 mt-4 space-y-4">
+                <div class="flex justify-between items-center font-bold text-lg">
+                    <span>Tổng tiền:</span>
+                    <span id="cart-total" class="text-red-500">0đ</span>
+                </div>
+                <button onclick="openOrderModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition cursor-pointer">
+                    <i class="fa-solid fa-file-invoice mr-2"></i>Nhập Thông Tin Đặt Hàng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="order-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden px-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeOrderModal()" class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl cursor-pointer">&times;</button>
+            <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-user-pen text-emerald-600"></i> Thông Tin Giao Hàng
+            </h4>
+            
+            <form id="customer-form" onsubmit="submitToGoogleForm(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên *</label>
+                    <input type="text" id="form-name" required placeholder="Nguyễn Văn A" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại *</label>
+                    <input type="tel" id="form-phone" required placeholder="0901234567" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ nhận hàng *</label>
+                    <input type="text" id="form-address" required placeholder="Số 123, Đường ABC, Quận X, TP. Y" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Danh sách sản phẩm</label>
+                    <textarea id="form-products" readonly rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 focus:outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú thêm</label>
+                    <input type="text" id="form-note" placeholder="Giao giờ hành chính, gọi trước khi giao..." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition mt-2 cursor-pointer">
+                    Tiếp Tục Đến Bước Thanh Toán <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="qr-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden px-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl relative">
+            <button onclick="closeQrModal()" class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl cursor-pointer">&times;</button>
+            <h4 class="text-lg font-bold text-emerald-700 mb-1">Quét Mã QR Đặt Hàng</h4>
+            <p class="text-xs text-gray-500 mb-4">Đơn hàng của bạn đã được ghi nhận trên hệ thống!</p>
+            
+            <div class="bg-gray-100 p-4 rounded-xl inline-block mb-4">
+                <img class="qr-code" src="images/qr-thanh-toan.png" alt="Mã QR Thanh Toán">
+            
+            <p class="text-sm font-semibold text-red-500 mb-4">Tổng số tiền cần quét: <span id="qr-total">0đ</span></p>
+            <button onclick="confirmPaymentFinished()" class="bg-gray-800 text-white px-6 py-2 rounded-lg text-sm w-full font-medium hover:bg-gray-900 transition cursor-pointer">Xác nhận đã chuyển khoản thành công</button>
+        </div>
+    </div>
+
+    <script>
+        // 1. Danh sách 18 sản phẩm (Đề bài yêu cầu 18 loại đồ ăn/sản phẩm) sử dụng link ảnh trực tuyến
+        const allProducts = [
+            { id: 1, category: 'nutrition', name: "Hồng Sâm Củ Khô Thượng Hạng", price: 1250000, img: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=500&q=80" },
+            { id: 2, category: 'nutrition', name: "Tổ Yến Chưng Đường Phèn Sẵn", price: 450000, img: "images/to-yen.jpg" },
+            { id: 3, category: 'nutrition', name: "Viên Uống Bổ Não Ginkgo Biloba", price: 320000, img: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&q=80" },
+            { id: 4, category: 'nutrition', name: "Đông Trùng Hạ Thảo Tây Tạng Sấy", price: 890000, img: "images/dong-trung-ha-thao.jpg" },
+            { id: 5, category: 'nutrition', name: "Sữa Hạt Dinh Dưỡng Hữu Cơ Organic", price: 280000, img: "https://images.unsplash.com/photo-1576186726115-4d51596775d1?w=500&q=80" },
+            { id: 6, category: 'nutrition', name: "Nước Hồng Sâm Linh Chi Đóng Chai", price: 550000, img: "https://images.unsplash.com/photo-1547489432-cf93fa6c71ee?w=500&q=80" },
+            { id: 7, category: 'nutrition', name: "Cao Linh Chi Táo Đỏ Cô Đặc", price: 620000, img: "https://images.unsplash.com/photo-1626847037657-fd3622613ce3?w=500&q=80" },
+            { id: 8, category: 'nutrition', name: "Viên Nang Dầu Cá Omega 3 Đậm Đặc", price: 390000, img: "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=500&q=80" },
+            { id: 9, category: 'nutrition', name: "Tinh Chất Nghệ Nano Curcumin", price: 480000, img: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=500&q=80" },
+            
+            { id: 10, category: 'medical', name: "Máy Đo Huyết Áp Tự Động Omron", price: 950000, img: "https://images.unsplash.com/photo-1603398938378-e54eab446dde?w=500&q=80" },
+            { id: 11, category: 'medical', name: "Máy Xông Mũi Họng Khí Dung", price: 680000, img: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=500&q=80" },
+            { id: 12, category: 'medical', name: "Hộp Sơ Cứu Gia Đình Cầm Tay", price: 190000, img: "images/tui-cuu-thuong.jpg" },
+            { id: 13, category: 'medical', name: "Máy Đo Nồng Độ Oxy Máu SpO2", price: 350000, img: "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=500&q=80" },
+            { id: 14, category: 'medical', name: "Nhiệt Kế Hồng Ngoại Tiếp Xúc Gần", price: 420000, img: "images/nhiet-ke.jpg" },
+            { id: 15, category: 'medical', name: "Máy Đo Đường Huyết Cầm Tay", price: 580000, img: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=500&q=80" },
+            { id: 16, category: 'medical', name: "Đèn Hồng Ngoại Trị Liệu Giảm Đau", price: 460000, img: "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=500&q=80" },
+            { id: 17, category: 'medical', name: "Cân Sức Khỏe Điện Tử Đa Chức Năng", price: 290000, img: "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=500&q=80" },
+            { id: 18, category: 'medical', name: "Khẩu Trang Y Tế N95 Đạt Chuẩn", price: 120000, img: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500&q=80" }
+        ];
+
+        let filteredProducts = [...allProducts];
+        let cart = [];
+        let currentPage = 1;
+        const itemsPerPage = 6; // Đề bài bắt buộc: phân trang 6 món ăn/sản phẩm 1 trang
+
+        function formatMoney(amount) {
+            return amount.toLocaleString('vi-VN') + 'đ';
+        }
+
+        // Render sản phẩm kèm chức năng phân trang
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageItems = filteredProducts.slice(startIndex, endIndex);
+
+            if(pageItems.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400">Không tìm thấy sản phẩm phù hợp</div>`;
+                renderPagination(0);
+                return;
+            }
+
+            grid.innerHTML = pageItems.map(p => `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition flex flex-col">
+                    <img src="${p.img}" alt="${p.name}" class="w-full h-48 object-cover bg-gray-50">
+                    <div class="p-4 flex flex-col flex-1 justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-${p.category === 'nutrition' ? 'emerald' : 'blue'}-50 text-${p.category === 'nutrition' ? 'emerald' : 'blue'}-600 uppercase">
+                                ${p.category === 'nutrition' ? 'Dinh Dưỡng' : 'Thiết Bị'}
+                            </span>
+                            <h3 class="font-semibold text-gray-800 text-sm mt-2 line-clamp-2 h-10">${p.name}</h3>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="text-red-500 font-bold text-base">${formatMoney(p.price)}</span>
+                            <button onclick="addToCart(${p.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white w-8 h-8 rounded-full flex items-center justify-center shadow transition cursor-pointer">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            renderPagination(filteredProducts.length);
+        }
+
+        // Vẽ các nút phân trang
+        function renderPagination(totalItems) {
+            const container = document.getElementById('pagination');
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if(totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            for(let i = 1; i <= totalPages; i++) {
+                html += `
+                    <button onclick="goToPage(${i})" class="w-8 h-8 rounded-lg border text-sm font-medium transition cursor-pointer ${currentPage === i ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 hover:bg-gray-100'}">
+                        ${i}
+                    </button>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderProducts();
+            window.scrollTo({ top: 300, behavior: 'smooth' });
+        }
+
+        // Chức năng tìm kiếm sản phẩm theo tên (Bổ sung chức năng tìm kiếm như đề bài yêu cầu)
+        function searchProducts() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            filteredProducts = allProducts.filter(p => p.name.toLowerCase().includes(query));
+            currentPage = 1;
+            renderProducts();
+        }
+
+        // Lọc theo danh mục
+        function filterCategory(cat) {
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.className = "nav-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-full text-xs font-medium transition cursor-pointer whitespace-nowrap");
+            event.target.className = "nav-btn bg-emerald-600 text-white px-3 py-2 rounded-full text-xs font-medium transition cursor-pointer whitespace-nowrap";
+
+            document.getElementById('search-input').value = '';
+            if(cat === 'all') {
+                filteredProducts = [...allProducts];
+            } else {
+                filteredProducts = allProducts.filter(p => p.category === cat);
+            }
+            currentPage = 1;
+            renderProducts();
+        }
+
+        // Quản lý giỏ hàng
+        function addToCart(id) {
+            const product = allProducts.find(p => p.id === id);
+            const exist = cart.find(item => item.id === id);
+            if(exist) {
+                exist.quantity += 1;
+            } else {
+                cart.push({...product, quantity: 1});
+            }
+            updateCart();
+        }
+
+        function updateCart() {
+            const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-count').innerText = totalCount;
+
+            const totalMoney = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            document.getElementById('cart-total').innerText = formatMoney(totalMoney);
+            document.getElementById('qr-total').innerText = formatMoney(totalMoney);
+
+            const container = document.getElementById('cart-items');
+            if(cart.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-gray-400 text-sm"><i class="fa-solid fa-folder-open text-3xl mb-2 block"></i>Giỏ hàng trống</div>`;
+                return;
+            }
+
+            container.innerHTML = cart.map(item => `
+                <div class="flex gap-3 bg-gray-50 p-3 rounded-lg border border-gray-100 items-center">
+                    <img src="${item.img}" class="w-12 h-12 object-cover rounded bg-white">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-xs font-medium text-gray-800 truncate">${item.name}</h4>
+                        <p class="text-xs text-red-500 font-semibold">${formatMoney(item.price)}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="changeQty(${item.id}, -1)" class="w-5 h-5 bg-white border text-gray-600 rounded flex items-center justify-center text-xs font-bold cursor-pointer">-</button>
+                        <span class="text-xs font-bold w-4 text-center">${item.quantity}</span>
+                        <button onclick="changeQty(${item.id}, 1)" class="w-5 h-5 bg-white border text-gray-600 rounded flex items-center justify-center text-xs font-bold cursor-pointer">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function changeQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            item.quantity += delta;
+            if(item.quantity <= 0) {
+                cart = cart.filter(i => i.id !== id);
+            }
+            updateCart();
+        }
+
+        function toggleCartModal() {
+            document.getElementById('cart-modal').classList.toggle('hidden');
+        }
+
+        // Mở Modal điền Form thông tin khách hàng
+        function openOrderModal() {
+            if(cart.length === 0) {
+                alert("Giỏ hàng của bạn đang trống!");
+                return;
+            }
+            // Tự động gom danh sách sản phẩm hiển thị vào ô textarea cố định
+            const productText = cart.map(item => `- ${item.name} (SL: ${item.quantity})`).join('\n');
+            document.getElementById('form-products').value = productText;
+            
+            document.getElementById('order-modal').classList.remove('hidden');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('order-modal').classList.add('hidden');
+        }
+
+        // HÀM GỬI DỮ LIỆU LÊN GOOGLE FORM CHUẨN KHÔNG BỊ LỖI MẠNG
+        function submitToGoogleForm(event) {
+            event.preventDefault(); // Chặn hành vi tải lại trang của form mặc định
+            
+            const name = document.getElementById('form-name').value;
+            const phone = document.getElementById('form-phone').value;
+            const address = document.getElementById('form-address').value;
+            const productsList = document.getElementById('form-products').value;
+            const note = document.getElementById('form-note').value;
+
+            // 1. CHÚ Ý: Dán đường link formResponse đã sửa đuôi của bạn vào đây
+            const googleFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfbT6EoR8D7jTp6mIKPK4nglrkQSMWyRomgLPimidigCnDEbQ/formResponse";
+            
+            // 2. CHÚ Ý: Điền chính xác các số entry bạn vừa tìm được ở Bước 2 vào đây
+            const formData = new URLSearchParams();
+            formData.append('entry.235810977', name);         // Số entry của ô Họ tên
+            formData.append('entry.75841260', phone);        // Số entry của ô Số điện thoại
+            formData.append('entry.1685324853', address);      // Số entry của ô Địa chỉ
+            formData.append('entry.887962785', productsList);  // Số entry của ô Sản phẩm
+            formData.append('entry.1263066210', note);         // Số entry của ô Ghi chú
+
+            // Tiến hành gửi ngầm dữ liệu sang Google bằng fetch API với chế độ 'no-cors'
+            fetch(googleFormUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                mode: 'no-cors',
+                body: formData.toString()
+            })
+            .then(() => {
+                // Sau khi gửi dữ liệu thành công lên hệ thống Google
+                closeOrderModal(); // Ẩn form đi
+                document.getElementById('qr-modal').classList.remove('hidden'); // Hiển thị popup QR Code ngay lập tức
+            })
+            .catch(err => {
+                alert("Có lỗi xảy ra khi gửi đơn hàng. Vui lòng kiểm tra lại mạng!");
+                console.error(err);
+            });
+        }
+
+        function closeQrModal() {
+            document.getElementById('qr-modal').classList.add('hidden');
+        }
+
+        function confirmPaymentFinished() {
+            alert("Đặt hàng thành công! Đơn hàng đã được lưu trên Google Sheet và gửi email thông báo tới quản trị viên.");
+            cart = [];
+            updateCart();
+            closeQrModal();
+            toggleCartModal();
+            document.getElementById('customer-form').reset();
+        }
+
+        window.onload = () => {
+            renderProducts();
+            updateCart();
+        };
+    </script>
+</body>
+</html>
